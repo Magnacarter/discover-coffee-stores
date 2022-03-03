@@ -3,9 +3,21 @@ import Image from 'next/image'
 import Banner from '/components/Banner/banner'
 import styles from '../styles/Home.module.css'
 import Card from '/components/Card/card'
+import coffeeStoresData from '../data/coffee-stores'
 
-export default function Home() {
+// This is server side code, user can inspect in the client console.
+// Becasue of this security, we can write all our server side code here.
+export async function getStaticProps(context) {
+  return {
+    props: {
+      coffeeStores: coffeeStoresData // will be passed to the page component as props
+    },
+  }
+}
 
+// This is client side code.
+// Next js allows front and backend code in the same file.
+export default function Home(props) {
   const handleOnBannerBtnClick = () => {
     console.log('btn clicked');
   }
@@ -25,27 +37,27 @@ export default function Home() {
         <div className={styles.heroImage}>
           <Image src={'/static/hero-image.png'} width={700} height={400} />
         </div>
-        <div className={styles.cardLayout}>
-          <Card 
-            href={'/coffee-store/dark-coffee'}
-            imgUrl={'/static/hero-image.png'}
-            name={'Dark Coffee'}
-            className={styles.card}
-          />
-          <Card 
-            href={'/coffee-store/dark-coffee'}
-            imgUrl={'/static/hero-image.png'}
-            name={'Dark Coffee'}
-            className={styles.card}
-          />
-          <Card 
-            href={'/coffee-store/dark-coffee'}
-            imgUrl={'/static/hero-image.png'}
-            name={'Dark Coffee'}
-            className={styles.card}
-          />
-        </div>
+        {props.coffeeStores.length > 0 && (
+          // react needs a root element, <> </> does that without showing in the DOM
+          <>
+            <h2 className={styles.heading2}>Coffee Stores</h2>
+            <div className={styles.cardLayout}>
+              {props.coffeeStores.map(coffeeStore => {
+                return (
+                  <Card
+                    key={coffeeStore.id}
+                    href={`/coffee-store/${coffeeStore.id}`}
+                    imgUrl={coffeeStore.imgUrl}
+                    name={coffeeStore.name}
+                    className={styles.card}
+                  />
+                )
+              })}
+            </div>
+          </>
+        )}
       </main>
     </div>
   )
 }
+
