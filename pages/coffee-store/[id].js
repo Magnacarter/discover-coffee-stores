@@ -100,31 +100,3 @@ const CoffeeStore = (props) => {
 }
 
 export default CoffeeStore
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
