@@ -44,7 +44,6 @@ export default function Home(props) {
           <>
             <h2 className={styles.heading2}>Coffee Stores</h2>
             <div className={styles.cardLayout}>
-            {console.log(props.coffeeStores)}
               {props.coffeeStores.map(coffeeStore => {
                 return (
                   <Card

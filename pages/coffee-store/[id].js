@@ -49,7 +49,7 @@ const CoffeeStore = (props) => {
     return <div>Loading...</div>
   }
 
-  const { address, name, dma, imgUrl } = props.coffeeStore.location;
+  const { location, name, imgUrl } = props.coffeeStore;
 
   const handleUpvoteButton = () => {
     console.log('upVote button clicked');
@@ -80,11 +80,11 @@ const CoffeeStore = (props) => {
         <div className={cls('glass', styles.col2)}>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/places.svg" height={24} width={24} />
-            <p className={styles.text}>{address}</p>
+            <p className={styles.text}>{location.address}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/nearMe.svg" height={24} width={24} />
-            <p className={styles.text}>{dma}</p>
+            <p className={styles.text}>{location.dma}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" height={24} width={24} />
