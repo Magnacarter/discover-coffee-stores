@@ -5,34 +5,37 @@ import Head from 'next/head'
 import styles from './coffee-store.module.css'
 import Image from 'next/image'
 import cls from 'classnames'
+import { fetchCoffeeStores } from '../../lib/coffee-stores'
 
 // getStaticProps also allows us to access params.
 // we can use getStaticProps({params}) or getStaticProps(props) then extract the params with
 // dot notation.
-export function getStaticProps(staticProps) {
+export async function getStaticProps(staticProps) {
   const params = staticProps.params;
-  console.log(params);
+  const coffeeStores = await fetchCoffeeStores();
+
   return {
     props: {
-      coffeeStore: coffeeStoresData.find((coffeeStore) => {
-        return coffeeStore.id.toString() === params.id // the dynamic id
+      coffeeStore: coffeeStores.find((coffeeStore) => {
+        return coffeeStore.fsq_id.toString() === params.id // the dynamic id
       })
     }
   }
 }
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
   // Make the paths dynamic.
-  const paths = coffeeStoresData.map(coffeeStore => {
+  const coffeeStores = await fetchCoffeeStores();
+  const paths = coffeeStores.map(coffeeStore => {
     return {
       params: {
-        id: coffeeStore.id.toString(),
+        id: coffeeStore.fsq_id.toString(),
       }
     }
   });
 
   return {
-    paths: paths,
+    paths,
     fallback: true
   }
 }
@@ -46,7 +49,7 @@ const CoffeeStore = (props) => {
     return <div>Loading...</div>
   }
 
-  const { address, name, neighbourhood, imgUrl } = props.coffeeStore;
+  const { address, name, dma, imgUrl } = props.coffeeStore.location;
 
   const handleUpvoteButton = () => {
     console.log('upVote button clicked');
@@ -66,7 +69,7 @@ const CoffeeStore = (props) => {
             <h1 className={styles.name}>{name}</h1>
           </div>
           <Image
-            src={imgUrl}
+            src={imgUrl || "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
             width={600}
             height={360}
             className={styles.storeImage}
@@ -81,7 +84,7 @@ const CoffeeStore = (props) => {
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/nearMe.svg" height={24} width={24} />
-            <p className={styles.text}>{neighbourhood}</p>
+            <p className={styles.text}>{dma}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" height={24} width={24} />

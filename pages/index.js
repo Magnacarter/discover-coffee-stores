@@ -3,28 +3,16 @@ import Image from 'next/image'
 import Banner from '/components/Banner/banner'
 import styles from '../styles/Home.module.css'
 import Card from '/components/Card/card'
-// import coffeeStoresData from '../data/coffee-stores'
+import { fetchCoffeeStores } from '../lib/coffee-stores'
 
 // This is server side code, user can inspect in the client console.
 // Becasue of this security, we can write all our server side code here.
 export async function getStaticProps(context) {
-
-  const options = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY
-    }
-  };
-
-  const response = await fetch('https://api.foursquare.com/v3/places/search?query=coffee%20shops&ll=39.798458%2C-94.807992&limit=6', options);
-  const data = await response.json();
-
-  console.log(data);
-
+  // We need to call this with await because it's an async function.
+  const coffeeStores = await fetchCoffeeStores();
   return {
     props: {
-      coffeeStores: data.results // will be passed to the page component as props
+      coffeeStores, // will be passed to the page component as props
     },
   }
 }
@@ -56,11 +44,12 @@ export default function Home(props) {
           <>
             <h2 className={styles.heading2}>Coffee Stores</h2>
             <div className={styles.cardLayout}>
+            {console.log(props.coffeeStores)}
               {props.coffeeStores.map(coffeeStore => {
                 return (
                   <Card
-                    key={coffeeStore.id}
-                    href={`/coffee-store/${coffeeStore.id}`}
+                    key={coffeeStore.fsq_id}
+                    href={`/coffee-store/${coffeeStore.fsq_id}`}
                     imgUrl={coffeeStore.imgUrl || "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
                     name={coffeeStore.name}
                     className={styles.card}
