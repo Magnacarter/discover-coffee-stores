@@ -1,72 +1,72 @@
-## Coure Notes
+## Course Notes
 
 Next Improvments
-	// It uses Rust compiler, it's 17x faster than Babel
-	// Speedy Web Compiler (SWC)
-	// It is enabled by default and can config it.
+	 It uses Rust compiler, it's 17x faster than Babel
+	 Speedy Web Compiler (SWC)
+	 It is enabled by default and can config it.
 
-	// It has Middleware
-		// Request happens, it goes to the Middleware to do redirects, auths, token validation location based
-		// nav and more... then api code will run.
-		// All you have to do is create a middleware.js file in the pages dir.
-		// Can be used for A/B tests, logging, advanced i18n routing, redirects, rewrites, server-side analytics, etc...
-		// Traditionally middleware setup takes quite a bit of config time, however,
-		// next is going back to the zero config setup for us and comes outta the box, ready to go.
+	 It has Middleware
+		 Request happens, it goes to the Middleware to do redirects, auths, token validation location based
+		 nav and more... then api code will run.
+		 All you have to do is create a middleware.js file in the pages dir.
+		 Can be used for A/B tests, logging, advanced i18n routing, redirects, rewrites, server-side analytics, etc...
+		 Traditionally middleware setup takes quite a bit of config time, however,
+		 next is going back to the zero config setup for us and comes outta the box, ready to go.
 
-	// You can install React 18
+	 You can install React 18
 
 
-	// Edge functions work with middleware
-		// Research edge functions and middleware
+	 Edge functions work with middleware
+		 Research edge functions and middleware
 
 Routing
-	// Index routes
-	// 2 rules of routing
-		// 1. the page needs to be a react component
-		// 2. the component needs to be exported by default
-			// export default function Home() {}
+	 Index routes
+	 2 rules of routing
+		 1. the page needs to be a react component
+		 2. the component needs to be exported by default
+			 export default function Home() {}
 
-	// Nested routes : /coffee-store/239487
-	// Dynamic routes 
-	// To use dynamic routes we need to import the 'next/router
+	 Nested routes : /coffee-store/239487
+	 Dynamic routes 
+	 To use dynamic routes we need to import the 'next/router
 
-	// linking routes with 'next/link
-		// link component will not refresh the page, just changes the route
-		// wnen linking to an external page, like google.ca, Link component
-		// only knows about routes in the pages directory so it makes sense
-		// to use the a tag instead for external links.
+	 linking routes with 'next/link
+		 link component will not refresh the page, just changes the route
+		 wnen linking to an external page, like google.ca, Link component
+		 only knows about routes in the pages directory so it makes sense
+		 to use the a tag instead for external links.
 
 Document.js 
-	// this is a file that allows us access to the body and head tags in the global scope
-	// Example: you would want the same fonts avaiable to the entire app while 
-	// only loading them once.
+	 this is a file that allows us access to the body and head tags in the global scope
+	 Example: you would want the same fonts avaiable to the entire app while 
+	 only loading them once.
 
 Pre-rendering
-	// When a user makes a request the server, not the client is responsible for rendering the html (pre-rendering)
-	// User gets the static page first, then once the JS loads the user can interact with the page. (hydration)
+	 When a user makes a request the server, not the client is responsible for rendering the html (pre-rendering)
+	 User gets the static page first, then once the JS loads the user can interact with the page. (hydration)
 
 Data Fetching
-	// 3 types
-	// 
+	 3 types
+	 
 
 getStaticProps Rules
-	// Can only be exported from a page file.
-		// It has to be a page file and it has to be exported.
-	// Meant for all routes.
-	// Only runs at build time.
-	// Only runs on server side
-	// on dev, runs on client and server side.
+	 Can only be exported from a page file.
+		 It has to be a page file and it has to be exported.
+	 Meant for all routes.
+	 Only runs at build time.
+	 Only runs on server side
+	 on dev, runs on client and server side.
 
 getStaticPaths
-	// if a page has dynamic routes and uses getStaticProps it needs to define a list of paths that have to be rendered to HTML
-	// at build time.
-	// getStaticPaths must be used with getStaticProps
-	// Can only be exported from a page file, otherwise next won't see it.
-	// It's meant for dynamic routes
-	// Page must also implement getStaticProps
-	// Only runs at build time (on the server)
-	// Not included in the client side bundle
-	// On dev, runs on both server and client
+	 if a page has dynamic routes and uses getStaticProps it needs to define a list of paths that have to be rendered to HTML
+	 at build time.
+	 getStaticPaths must be used with getStaticProps
+	 Can only be exported from a page file, otherwise next won't see it.
+	 It's meant for dynamic routes
+	 Page must also implement getStaticProps
+	 Only runs at build time (on the server)
+	 Not included in the client side bundle
+	 On dev, runs on both server and client
 
 ## Getting Started
 
