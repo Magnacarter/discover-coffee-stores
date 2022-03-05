@@ -1,13 +1,19 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Banner from '/components/Banner/banner'
+
 import styles from '../styles/Home.module.css'
 import Card from '/components/Card/card'
 import { fetchCoffeeStores } from '../lib/coffee-stores'
 
+import useTrackLocation from '../hooks/use-track-location'
+import { useEffect, useState, useContext } from 'react'
+import { ACTION_TYPES, StoreContext } from './_app'
+
 // This is server side code, user can inspect in the client console.
 // Becasue of this security, we can write all our server side code here.
 export async function getStaticProps(context) {
+
   // We need to call this with await because it's an async function.
   const coffeeStores = await fetchCoffeeStores();
   return {
@@ -20,9 +26,52 @@ export async function getStaticProps(context) {
 // This is client side code.
 // Next js allows front and backend code in the same file.
 export default function Home(props) {
+
+  const { handleTrackLocation, locationErrorMsg, isFindingLocation } = useTrackLocation();
+
+  // const [coffeeStores, setCoffeeStores] = useState('');
+  // Instead of using the local state we'll use dispatch to set the context
+  // Now we've exposed dispatch and state from the context.
+  const { dispatch, state } = useContext(StoreContext);
+
+  // Destructure state to get the coffee stores from context.
+  // fetchCoffeeStores is dependent on latlong so we need to expose it as well.
+  const { coffeeStores, latlong } = state;
+
+  const [coffeeStoresError, setCoffeeStroesError] = useState(null);
+
+  console.log( props.coffeeStores );
+
+  useEffect(async () => {
+    if(latlong) {
+      try {
+        const fetchedCoffeeStores = await fetchCoffeeStores(latlong, 30);
+        console.log({fetchedCoffeeStores});
+
+        // set coffee stores
+        // setCoffeeStores(fetchedCoffeeStores);
+        // No longer using local state, using Context hook from react.
+        // We don't want to read data from our local state,
+        // We want to read data from our context state.
+        dispatch({
+          type: ACTION_TYPES.SET_COFFEE_STORES,
+          payload: { 
+            coffeeStores: fetchedCoffeeStores,
+          }
+        });
+      }
+      catch(error) {
+        //set error, error is an object and we want to print it to the page
+        setCoffeeStroesError(error.message);
+        console.log({error});
+      }
+    }
+  },[latlong]); // use latlong as a dependency
+
   const handleOnBannerBtnClick = () => {
-    console.log('btn clicked');
+    handleTrackLocation();
   }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -33,12 +82,41 @@ export default function Home(props) {
 
       <main className={styles.main}>
         <Banner
-          buttonText="View Stores Nearby"
+          buttonText={isFindingLocation ? "Locating..." : "View Stores Nearby"}
           handleOnClick={handleOnBannerBtnClick}
         />
+
+        {/*Location error msg*/}
+        { locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p> }
+
+        {/*Render coffee stores error msg*/}
+        { coffeeStoresError && <p>Something went wrong: {coffeeStoresError}</p> }
+
         <div className={styles.heroImage}>
           <Image src={'/static/hero-image.png'} width={700} height={400} />
         </div>
+
+        {/*User coffee stores*/}
+        {coffeeStores.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Stores near me</h2>
+            <div className={styles.cardLayout}>
+              {coffeeStores.map(coffeeStore => {
+                return (
+                  <Card
+                    key={coffeeStore.id}
+                    href={`/coffee-store/${coffeeStore.id}`}
+                    imgUrl={coffeeStore.imgUrl || "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
+                    name={coffeeStore.name}
+                    className={styles.card}
+                  />
+                )
+              })}
+            </div>
+          </>
+        )}
+
+        {/*My coffee stores*/}
         {props.coffeeStores.length > 0 && (
           // react needs a root element, <> </> does that without showing in the DOM
           <>
@@ -47,8 +125,8 @@ export default function Home(props) {
               {props.coffeeStores.map(coffeeStore => {
                 return (
                   <Card
-                    key={coffeeStore.fsq_id}
-                    href={`/coffee-store/${coffeeStore.fsq_id}`}
+                    key={coffeeStore.id}
+                    href={`/coffee-store/${coffeeStore.id}`}
                     imgUrl={coffeeStore.imgUrl || "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
                     name={coffeeStore.name}
                     className={styles.card}
@@ -62,4 +140,3 @@ export default function Home(props) {
     </div>
   )
 }
-

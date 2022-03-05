@@ -14,11 +14,13 @@ export async function getStaticProps(staticProps) {
   const params = staticProps.params;
   const coffeeStores = await fetchCoffeeStores();
 
+  const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
+    return coffeeStore.fsq_id === params.id // the dynamic id
+  });
+
   return {
     props: {
-      coffeeStore: coffeeStores.find((coffeeStore) => {
-        return coffeeStore.fsq_id.toString() === params.id // the dynamic id
-      })
+      coffeeStore: findCoffeeStoreById ? findCoffeeStoreById : {},
     }
   }
 }
@@ -26,17 +28,18 @@ export async function getStaticProps(staticProps) {
 export async function getStaticPaths() {
   // Make the paths dynamic.
   const coffeeStores = await fetchCoffeeStores();
+
   const paths = coffeeStores.map(coffeeStore => {
     return {
       params: {
-        id: coffeeStore.fsq_id.toString(),
+        id: coffeeStore.id,
       }
     }
   });
 
   return {
     paths,
-    fallback: true
+    fallback: true // Because this is true, if it encounters a path it doesn't know, it will call getStaticProps again.
   }
 }
 
@@ -49,7 +52,7 @@ const CoffeeStore = (props) => {
     return <div>Loading...</div>
   }
 
-  const { location, name, imgUrl } = props.coffeeStore;
+  const { address, dma, name, imgUrl } = props.coffeeStore;
 
   const handleUpvoteButton = () => {
     console.log('upVote button clicked');
@@ -80,11 +83,11 @@ const CoffeeStore = (props) => {
         <div className={cls('glass', styles.col2)}>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/places.svg" height={24} width={24} />
-            <p className={styles.text}>{location.address}</p>
+            <p className={styles.text}>{address}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/nearMe.svg" height={24} width={24} />
-            <p className={styles.text}>{location.dma}</p>
+            <p className={styles.text}>{dma}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" height={24} width={24} />
