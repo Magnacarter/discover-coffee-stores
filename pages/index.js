@@ -15,6 +15,8 @@ import { ACTION_TYPES, StoreContext } from '../context/store-context'
 export async function getStaticProps(context) {
 
   // We need to call this with await because it's an async function.
+  // Next says not to call an API route inside static props.
+  // Get static props is done at build time, internal api routes aren't available at build.
   const coffeeStores = await fetchCoffeeStores();
   return {
     props: {
@@ -45,8 +47,11 @@ export default function Home(props) {
   useEffect(async () => {
     if(latlong) {
       try {
-        const fetchedCoffeeStores = await fetchCoffeeStores(latlong, 30);
-        console.log({fetchedCoffeeStores});
+        // We built an api serverless function in pages/api
+        const response = await fetch(`api/getCoffeeStoresByLocation?latlong=${latlong}&limit=30`);
+
+        // Now we need to await the json response from fetch()
+        const coffeeStores = await response.json();
 
         // set coffee stores
         // setCoffeeStores(fetchedCoffeeStores);
@@ -56,7 +61,7 @@ export default function Home(props) {
         dispatch({
           type: ACTION_TYPES.SET_COFFEE_STORES,
           payload: { 
-            coffeeStores: fetchedCoffeeStores,
+            coffeeStores, // Because the var and the keyname are the same we can just use the var
           }
         });
       }
