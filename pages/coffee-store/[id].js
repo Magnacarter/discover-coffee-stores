@@ -1,11 +1,13 @@
+import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import coffeeStoresData from '../../data/coffee-stores'
 import Head from 'next/head'
 import styles from './coffee-store.module.css'
 import Image from 'next/image'
 import cls from 'classnames'
 import { fetchCoffeeStores } from '../../lib/coffee-stores'
+import { StoreContext } from '../../context/store-context';
+import { isEmpty } from '../../utils/index'
 
 // getStaticProps also allows us to access params.
 // we can use getStaticProps({params}) or getStaticProps(props) then extract the params with
@@ -15,7 +17,7 @@ export async function getStaticProps(staticProps) {
   const coffeeStores = await fetchCoffeeStores();
 
   const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
-    return coffeeStore.fsq_id === params.id // the dynamic id
+    return coffeeStore.id === params.id // the dynamic id
   });
 
   return {
@@ -43,8 +45,7 @@ export async function getStaticPaths() {
   }
 }
 
-const CoffeeStore = (props) => {
-  console.log(props);
+const CoffeeStore = (initialProps) => {
   const router = useRouter();
 
   // if fallback is true in getStaticPaths then use the router
@@ -52,7 +53,29 @@ const CoffeeStore = (props) => {
     return <div>Loading...</div>
   }
 
-  const { address, dma, name, imgUrl } = props.coffeeStore;
+  const id = router.query.id.toString();
+
+  const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore || {});
+
+  const {
+    state: { coffeeStores }
+  } = useContext(StoreContext);
+
+  console.log(coffeeStores)
+
+  useEffect(() => {
+    console.log(initialProps.coffeeStore);
+    if (isEmpty(initialProps.coffeeStore)) {
+      if (coffeeStores.length > 0) {
+        const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
+          return coffeeStore.id == id // the dynamic id
+        });
+        setCoffeeStore(findCoffeeStoreById);
+      }
+    }
+  }, [id]);
+
+  const { address, dma, name, imgUrl } = coffeeStore;
 
   const handleUpvoteButton = () => {
     console.log('upVote button clicked');

@@ -8,7 +8,7 @@ import { fetchCoffeeStores } from '../lib/coffee-stores'
 
 import useTrackLocation from '../hooks/use-track-location'
 import { useEffect, useState, useContext } from 'react'
-import { ACTION_TYPES, StoreContext } from './_app'
+import { ACTION_TYPES, StoreContext } from '../context/store-context'
 
 // This is server side code, user can inspect in the client console.
 // Becasue of this security, we can write all our server side code here.
