@@ -61,16 +61,49 @@ const CoffeeStore = (initialProps) => {
     state: { coffeeStores }
   } = useContext(StoreContext);
 
-  console.log(coffeeStores)
+  console.log(coffeeStores);
 
+  // Update the AT db when useEffect is called so the store selected is
+  // no longer relient on context.
+  const handleCreateCoffeeStore = async (coffeeStore) => {
+    try {
+      const { id, name, address, dma, imgUrl, voting } = coffeeStore;
+      // Config fetch for handling posts
+      const response = await fetch('/api/createCoffeeStore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          name,
+          address: address || '',
+          dma: dma || '',
+          imgUrl,
+          voting: 0
+        }),
+      });
+      const dbCoffeeStore = response.json();
+      console.log({ dbCoffeeStore });
+    } catch (err) {
+      console.error('Error creating coffee store', err);
+    }
+  }
+
+  // useEffect occurs after the page has rendered.
   useEffect(() => {
     console.log(initialProps.coffeeStore);
     if (isEmpty(initialProps.coffeeStore)) {
       if (coffeeStores.length > 0) {
-        const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
+        const coffeeStoreFromContext = coffeeStores.find((coffeeStore) => {
           return coffeeStore.id == id // the dynamic id
         });
-        setCoffeeStore(findCoffeeStoreById);
+
+        if (coffeeStoreFromContext) {
+          setCoffeeStore(coffeeStoreFromContext);
+          // Update the db.
+          handleCreateCoffeeStore(coffeeStoreFromContext);
+        }
       }
     }
   }, [id]);
@@ -117,7 +150,7 @@ const CoffeeStore = (initialProps) => {
             <p className={styles.text}>1</p>
           </div>
 
-          <button 
+          <button
             className={styles.upvoteButton}
             onClick={handleUpvoteButton}>
             Up Vote
