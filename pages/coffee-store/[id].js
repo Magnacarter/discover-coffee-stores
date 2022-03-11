@@ -8,6 +8,7 @@ import cls from 'classnames'
 import { fetchCoffeeStores } from '../../lib/coffee-stores'
 import { StoreContext } from '../../context/store-context';
 import { isEmpty } from '../../utils/index'
+import useSWR from 'swr'
 
 // getStaticProps also allows us to access params.
 // we can use getStaticProps({params}) or getStaticProps(props) then extract the params with
@@ -61,8 +62,6 @@ const CoffeeStore = (initialProps) => {
     state: { coffeeStores }
   } = useContext(StoreContext);
 
-  console.log(coffeeStores);
-
   // Update the AT db when useEffect is called so the store selected is
   // no longer relient on context.
   const handleCreateCoffeeStore = async (coffeeStore) => {
@@ -83,8 +82,7 @@ const CoffeeStore = (initialProps) => {
           voting: 0
         }),
       });
-      const dbCoffeeStore = response.json();
-      console.log({ dbCoffeeStore });
+      const dbCoffeeStore = await response.json();
     } catch (err) {
       console.error('Error creating coffee store', err);
     }
@@ -92,7 +90,6 @@ const CoffeeStore = (initialProps) => {
 
   // useEffect occurs after the page has rendered.
   useEffect(() => {
-    console.log(initialProps.coffeeStore);
     if (isEmpty(initialProps.coffeeStore)) {
       if (coffeeStores.length > 0) {
         const coffeeStoreFromContext = coffeeStores.find((coffeeStore) => {
@@ -104,14 +101,54 @@ const CoffeeStore = (initialProps) => {
           // Update the db.
           handleCreateCoffeeStore(coffeeStoreFromContext);
         }
-      }
+      } 
+    } else {
+      // This is a statically generated route (SSG).
+      // Since the data is already there pass it to our createCoffeeStore api.
+      handleCreateCoffeeStore(initialProps.coffeeStore);
     }
-  }, [id]);
+  }, [id, initialProps, initialProps.coffeeStore, coffeeStores]);
 
   const { address, dma, name, imgUrl } = coffeeStore;
+  const [votingCount, setVotingCount] = useState(0);
+  const fetcher = url => fetch(url).then(r => r.json());
+  const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher, { refreshInterval: 1 });
 
-  const handleUpvoteButton = () => {
-    console.log('upVote button clicked');
+  useEffect(() => {
+    // the minute we have data from useSWR we can update the app.
+    if (data && data.length > 0) {
+      setCoffeeStore(data[0]);
+      setVotingCount(data[0].voting);
+    }
+  }, [data]);
+
+  const handleUpvoteButton = async () => {
+    try {
+      // Config fetch for handling put
+      const response = await fetch(`/api/favCoffeeStoreById?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+        }), 
+      });
+
+      const dbCoffeeStore = await response.json();
+
+      if (dbCoffeeStore && dbCoffeeStore > 0) {
+        let count = votingCount + 1;
+        setVotingCount(count);
+      }
+    } catch (err) {
+      console.error('Error updating your vote.', err);
+    }
+  }
+
+  // Check if there's an error from useSWR
+  if (error) {
+    return <div>Something went wrong retrieving the coffee store page.</div>
   }
 
   return (
@@ -147,7 +184,7 @@ const CoffeeStore = (initialProps) => {
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" height={24} width={24} />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
 
           <button
