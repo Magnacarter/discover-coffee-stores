@@ -36,42 +36,44 @@ export default function Home(props) {
   // Now we've exposed dispatch and state from the context.
   const { dispatch, state } = useContext(StoreContext);
 
+  const [coffeeStoresError, setCoffeeStoresError] = useState(null);
+
   // Destructure state to get the coffee stores from context.
   // fetchCoffeeStores is dependent on latlong so we need to expose it as well.
   const { coffeeStores, latlong } = state;
 
-  const [coffeeStoresError, setCoffeeStroesError] = useState(null);
+  useEffect( async () => {
+    const setCoffeeStoresByLocation = async () => {
+      if (latlong) {
+        try {
+          // We built an api serverless function in pages/api
+          const response = await fetch(`api/getCoffeeStoresByLocation?latlong=${latlong}&limit=30`);
+  
+          // Now we need to await the json response from fetch()
+          const coffeeStores = await response.json();
 
-  console.log( props.coffeeStores );
-
-  useEffect(async () => {
-    if(latlong) {
-      try {
-        // We built an api serverless function in pages/api
-        const response = await fetch(`api/getCoffeeStoresByLocation?latlong=${latlong}&limit=30`);
-
-        // Now we need to await the json response from fetch()
-        const coffeeStores = await response.json();
-
-        // set coffee stores
-        // setCoffeeStores(fetchedCoffeeStores);
-        // No longer using local state, using Context hook from react.
-        // We don't want to read data from our local state,
-        // We want to read data from our context state.
-        dispatch({
-          type: ACTION_TYPES.SET_COFFEE_STORES,
-          payload: { 
-            coffeeStores, // Because the var and the keyname are the same we can just use the var
-          }
-        });
-      }
-      catch(error) {
-        //set error, error is an object and we want to print it to the page
-        setCoffeeStroesError(error.message);
-        console.log({error});
+          // set coffee stores
+          // setCoffeeStores(fetchedCoffeeStores);
+          // No longer using local state, using Context hook from react.
+          // We don't want to read data from our local state,
+          // We want to read data from our context state.
+          dispatch({
+            type: ACTION_TYPES.SET_COFFEE_STORES,
+            payload: {
+              coffeeStores, // Because the var and the keyname are the same we can just use the var
+            }
+          });
+          setCoffeeStoresError("");
+        }
+        catch (error) {
+          //set error, error is an object and we want to print it to the page
+          setCoffeeStoresError(error.message);
+          console.error({ error });
+        }
       }
     }
-  },[latlong]); // use latlong as a dependency
+    setCoffeeStoresByLocation();
+  }, [latlong, dispatch]); // use latlong as a dependency
 
   const handleOnBannerBtnClick = () => {
     handleTrackLocation();
@@ -92,10 +94,10 @@ export default function Home(props) {
         />
 
         {/*Location error msg*/}
-        { locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p> }
+        {locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p>}
 
         {/*Render coffee stores error msg*/}
-        { coffeeStoresError && <p>Something went wrong: {coffeeStoresError}</p> }
+        {coffeeStoresError && <p>Something went wrong: {coffeeStoresError}</p>}
 
         <div className={styles.heroImage}>
           <Image src={'/static/hero-image.png'} width={700} height={400} />

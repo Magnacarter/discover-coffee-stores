@@ -7,7 +7,7 @@ import Image from 'next/image'
 import cls from 'classnames'
 import { fetchCoffeeStores } from '../../lib/coffee-stores'
 import { StoreContext } from '../../context/store-context';
-import { isEmpty } from '../../utils/index'
+import { isEmpty, fetcher } from '../../utils/index'
 import useSWR from 'swr'
 
 // getStaticProps also allows us to access params.
@@ -49,24 +49,17 @@ export async function getStaticPaths() {
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
 
-  // if fallback is true in getStaticPaths then use the router
-  if (router.isFallback) {
-    return <div>Loading...</div>
-  }
-
-  const id = router.query.id.toString();
+  const id = router.query.id;
 
   const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore || {});
 
-  const {
-    state: { coffeeStores }
-  } = useContext(StoreContext);
+  const { state: { coffeeStores } } = useContext(StoreContext);
 
   // Update the AT db when useEffect is called so the store selected is
   // no longer relient on context.
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      const { id, name, address, dma, imgUrl, voting } = coffeeStore;
+      const { id, name, address, dma, imgUrl } = coffeeStore;
       // Config fetch for handling posts
       const response = await fetch('/api/createCoffeeStore', {
         method: 'POST',
@@ -111,7 +104,6 @@ const CoffeeStore = (initialProps) => {
 
   const { address, dma, name, imgUrl } = coffeeStore;
   const [votingCount, setVotingCount] = useState(0);
-  const fetcher = url => fetch(url).then(r => r.json());
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher, { refreshInterval: 1 });
 
   useEffect(() => {
@@ -121,6 +113,11 @@ const CoffeeStore = (initialProps) => {
       setVotingCount(data[0].voting);
     }
   }, [data]);
+
+  // if fallback is true in getStaticPaths then use the router
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
 
   const handleUpvoteButton = async () => {
     try {
@@ -159,7 +156,7 @@ const CoffeeStore = (initialProps) => {
       <div className={styles.container}>
         <div className={styles.col1}>
           <div className={styles.backToHomeLink}>
-            <Link href={'/'}><a>Back to home</a></Link>
+            <Link href={'/'}><a>← Back to home</a></Link>
           </div>
           <div className={styles.nameWrapper}>
             <h1 className={styles.name}>{name}</h1>
